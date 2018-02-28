@@ -9,6 +9,7 @@
 
     <!-- AdMob ad unit IDs -->
     <string name="banner_home_footer">ca-app-pub-5480145145575119/4386526639</string>
+    <string name="inter_full_screen">ca-app-pub-5480145145575119/8179158338</string>
    <!-- <string name="banner_home_footer">ca-app-pub-3940256099942544/6300978111</string>-->
     <string name="admob_app_id">ca-app-pub-5480145145575119~8426732041</string>
 

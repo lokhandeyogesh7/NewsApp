@@ -23,6 +23,8 @@ import kotlinx.android.synthetic.main.content_main.*
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
     var arrChannel = ArrayList<Channel>()
+    private lateinit var mInterstitialAd: InterstitialAd
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,9 +43,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setupViewPager()
 
         val adRequest = AdRequest.Builder()
-               /* .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
-                // Check the LogCat to get your test device ID
-                .addTestDevice("691D88AFF4BA3627C25D11013C04ECC3")*/
                 .build()
 
         adView.adListener = object : AdListener() {
@@ -69,6 +68,36 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         adView.loadAd(adRequest)
+
+
+        mInterstitialAd = InterstitialAd(this)
+        mInterstitialAd.adUnitId = getString(R.string.inter_full_screen)
+        mInterstitialAd.loadAd(AdRequest.Builder().build())
+
+        mInterstitialAd.adListener = object : AdListener() {
+            override fun onAdLoaded() {
+                super.onAdLoaded()
+                // Code to be executed when an ad finishes loading.
+            }
+
+            override fun onAdFailedToLoad(errorCode: Int) {
+                // Code to be executed when an ad request fails.
+            }
+
+            override fun onAdOpened() {
+                // Code to be executed when the ad is displayed.
+            }
+
+            override fun onAdLeftApplication() {
+                // Code to be executed when the user has left the app.
+            }
+
+            override fun onAdClosed() {
+                super.onAdClosed()
+                // Code to be executed when when the interstitial ad is closed.
+            }
+        }
+
 
     }
 
@@ -103,8 +132,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
+        if (mInterstitialAd.isLoaded) {
+            mInterstitialAd.show()
+        }
         when (item.itemId) {
-
             R.id.nav_live_tv -> {
                 val intLive = Intent(this@MainActivity, LiveChannelActivity::class.java)
                 startActivity(intLive)
@@ -131,6 +162,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onClick(p0: View?) {
+        if (mInterstitialAd.isLoaded) {
+            mInterstitialAd.show()
+        }
         val holder = p0!!.tag as? ChannelAdapter.MyViewHolder
         val position = arrChannel[holder?.adapterPosition!!]
         println("clicked position is ${arrChannel[holder?.adapterPosition!!].channelName}")

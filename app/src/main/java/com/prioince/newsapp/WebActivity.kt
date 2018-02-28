@@ -3,9 +3,11 @@ package com.prioince.newsapp
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.support.annotation.RequiresApi
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.view.MenuItem
@@ -48,9 +50,6 @@ class WebActivity : AppCompatActivity() {
         setUpViewForVideo(link)
 
         val adRequest = AdRequest.Builder()
-                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
-                // Check the LogCat to get your test device ID
-                .addTestDevice("691D88AFF4BA3627C25D11013C04ECC3")
                 .build()
 
         adViewVideoView.adListener = object : AdListener() {
@@ -146,14 +145,47 @@ class WebActivity : AppCompatActivity() {
             return super.shouldOverrideUrlLoading(view, url)
         }
 
+        @SuppressLint("SetTextI18n")
         override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
             super.onPageStarted(view, url, favicon)
             val animRotate = AnimationUtils.loadAnimation(getApplicationContext(),
                     R.anim.rotate)
             progressBarCourseVideo.visibility = View.VISIBLE
+            ivChannel.visibility = View.VISIBLE
+
             progressBarCourseVideo.text = "$title लोड होत आहे"
+            ivChannel.setColorFilter(ContextCompat.getColor(this@WebActivity, R.color.white), android.graphics.PorterDuff.Mode.MULTIPLY);
+            when {
+                link!!.contains("abp") -> {
+                    ivChannel.setImageResource(R.drawable.abp_majha)
+                    ivChannel.animation = animRotate
+                    ivChannel.animate()
+                }
+                link!!.contains("zeenews") -> {
+                    ivChannel.setImageResource(R.drawable.zee24taas)
+                    ivChannel.animation = animRotate
+                    ivChannel.animate()
+                }
+                link!!.contains("lokmat") -> {
+                    ivChannel.setImageResource(R.drawable.news18)
+                    ivChannel.animation = animRotate
+                    ivChannel.animate()
+                }
+                link!!.contains("jaimaharashtranews") -> {
+                    ivChannel.setImageResource(R.drawable.jai_maharashtra_news_channel)
+                    ivChannel.animation = animRotate
+                    ivChannel.animate()
+                }
+                link!!.contains("saamtv") -> {
+                    ivChannel.setImageResource(R.drawable.saam)
+                    ivChannel.animation = animRotate
+                    ivChannel.animate()
+                }
+            }
+
             progressBarCourseVideo.animation = animRotate
             progressBarCourseVideo.animate()
+
 
             view!!.visibility = View.GONE
         }
@@ -161,7 +193,9 @@ class WebActivity : AppCompatActivity() {
         override fun onPageCommitVisible(view: WebView?, url: String?) {
             super.onPageCommitVisible(view, url)
             progressBarCourseVideo.visibility = View.GONE
+            ivChannel.visibility = View.GONE
             progressBarCourseVideo.animation = null
+            ivChannel.animation = null
             view!!.visibility = View.VISIBLE
         }
     }

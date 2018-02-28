@@ -2,6 +2,8 @@ package com.prioince.newsapp
 
 import android.os.Bundle
 import android.content.Intent
+import android.content.res.Configuration
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.google.android.gms.ads.AdListener
@@ -13,17 +15,54 @@ import com.google.android.youtube.player.YouTubePlayerView
 import kotlinx.android.synthetic.main.activity_video_view.*
 import kotlinx.android.synthetic.main.activity_youtube_player.*
 import kotlinx.android.synthetic.main.custom_top.*
+import android.content.pm.ActivityInfo
+import android.os.Build
+import android.annotation.SuppressLint
+import android.provider.Settings
 
 
-class YoutubePlayerActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedListener {
+
+
+class YoutubePlayerActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedListener, YouTubePlayer.OnFullscreenListener {
+    override fun onFullscreen(p0: Boolean) {
+        if (p0) {
+            requestedOrientation = LANDSCAPE_ORIENTATION;
+        } else {
+            requestedOrientation = PORTRAIT_ORIENTATION;
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            mPlayer?.setFullscreen(true)
+        }
+        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            mPlayer?.setFullscreen(false)
+        }
+    }
 
     private val RECOVERY_DIALOG_REQUEST = 1
-    val DEVELOPER_KEY = "AIzaSyBKKV_8QmYn9l6Nsac-MN6I7jKrUrrpN1I";
+    val DEVELOPER_KEY = "AIzaSyBKKV_8QmYn9l6Nsac-MN6I7jKrUrrpN1I"
 
-    // YouTube video id
-    val YOUTUBE_VIDEO_CODE = "z5JTPPcMJyw";
     var title: String? = null
     var link: String? = null
+    @SuppressLint("InlinedApi")
+    private val PORTRAIT_ORIENTATION = if (Build.VERSION.SDK_INT < 9)
+        ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+    else
+        ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
+
+    @SuppressLint("InlinedApi")
+    private val LANDSCAPE_ORIENTATION = if (Build.VERSION.SDK_INT < 9)
+        ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+    else
+        ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+
+    private val mPlayer: YouTubePlayer? = null
+    private var mAutoRotation = false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +73,9 @@ class YoutubePlayerActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitialized
         tvTitleHeader.text = title
 
         youtube_view.initialize(DEVELOPER_KEY, this)
+
+        mAutoRotation = Settings.System.getInt(getContentResolver(),
+                Settings.System.ACCELEROMETER_ROTATION, 0) == 1;
 
         ivBackButton.setOnClickListener {
             onBackPressed()
@@ -91,8 +133,22 @@ class YoutubePlayerActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitialized
             player.loadVideo(link)
 
             // Hiding player controls
-            player.setPlayerStyle(YouTubePlayer.PlayerStyle.CHROMELESS)
+            //player.setPlayerStyle(YouTubePlayer.PlayerStyle.CHROMELESS)
         }
+
+        player.setOnFullscreenListener(this)
+
+        if (mAutoRotation) {
+            player.addFullscreenControlFlag(YouTubePlayer.FULLSCREEN_FLAG_CONTROL_ORIENTATION
+                    or YouTubePlayer.FULLSCREEN_FLAG_CONTROL_SYSTEM_UI
+                    or YouTubePlayer.FULLSCREEN_FLAG_ALWAYS_FULLSCREEN_IN_LANDSCAPE
+                    or YouTubePlayer.FULLSCREEN_FLAG_CUSTOM_LAYOUT)
+        } else {
+            player.addFullscreenControlFlag(YouTubePlayer.FULLSCREEN_FLAG_CONTROL_ORIENTATION
+                    or YouTubePlayer.FULLSCREEN_FLAG_CONTROL_SYSTEM_UI
+                    or YouTubePlayer.FULLSCREEN_FLAG_CUSTOM_LAYOUT)
+        }
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
@@ -121,11 +177,14 @@ class YoutubePlayerActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitialized
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+    }
+
     override fun onDestroy() {
         if (adViewYoutube != null) {
             adViewYoutube.destroy()
         }
         super.onDestroy()
     }
-
 }
